@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="PagerIndicatorView">
+        <!--点的个数-->
+        <attr name="itemCount" format="integer"/>
+        <!--默认显示的icon-->
+        <attr name="default_icon" format="reference"/>
+        <!--选中的icon-->
+        <attr name="selected_icon" format="reference"/>
+        <!--icon的又边距-->
+        <attr name="icon_right_margin" format="dimension"/>
+    </declare-styleable>
+
+</resources>
