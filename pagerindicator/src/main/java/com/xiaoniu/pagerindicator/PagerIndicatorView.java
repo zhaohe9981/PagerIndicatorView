@@ -1,33 +1,20 @@
 package com.xiaoniu.pagerindicator;
 
 import android.content.Context;
-import android.content.res.TypedArray;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.RectF;
 import android.util.AttributeSet;
-import android.util.TypedValue;
-import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
+import android.view.View;
+
 
 /**
- * @author xiaoniu
- * @date 2018/7/30.
+ * @author: hezhao
+ * @data: 2019-08-20
+ * @describe: pager 指示器
  */
-
-public class PagerIndicatorView extends RelativeLayout{
-
-    /**圆点的个数*/
-    private int dotNum = 4;
-    /**默认的icon*/
-    private int default_icon_id;
-    /**选中的icon*/
-    private int select_icon_id;
-    private int icon_right_margin = 20;
-    /**圆点之间的距离*/
-    private int mDistance;
-
-    private LinearLayout indicatorLayout;
-    private ImageView selected_dots;
+public class PagerIndicatorView extends View {
 
     public PagerIndicatorView(Context context) {
         this(context, null);
@@ -39,48 +26,176 @@ public class PagerIndicatorView extends RelativeLayout{
 
     public PagerIndicatorView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init(context, attrs);
+        init();
     }
 
-    private void init(Context context, AttributeSet attrs){
-        TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.PagerIndicatorView);
-        if (typedArray != null){
-            dotNum = typedArray.getInteger(R.styleable.PagerIndicatorView_itemCount, 4);
-            default_icon_id = typedArray.getResourceId(R.styleable.PagerIndicatorView_default_icon, -1);
-            select_icon_id = typedArray.getResourceId(R.styleable.PagerIndicatorView_selected_icon, -1);
-            icon_right_margin = (int) typedArray.getDimension(R.styleable.PagerIndicatorView_icon_right_margin,
-                    TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_PX, 20, getResources().getDisplayMetrics()));
+    private void init(){
+        initPaint();
+    }
+
+    private Paint mNormalDotPaint;
+    private Paint mScrollDotPaint;
+
+    /**点的数量*/
+    private int dotCounts;
+    /**正常的点宽度*/
+    private int normalDotWidth;
+    private int normalDotHeight;
+    /**滑动的点宽度*/
+    private int scrollDotWidth;
+    private int scrollDotHeight;
+    /**点之间的距离*/
+    private int dotMargin;
+    /**控件的宽高*/
+    private int viewWidth;
+    private int viewHeight;
+
+    /**可以滑动的view滑动的距离*/
+    private int scrollInstance;
+    /**可滑动的view所在的位置*/
+    private int scrollPosition;
+
+    private void initPaint() {
+        //初始化画笔
+       mNormalDotPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+       mNormalDotPaint.setColor(Color.parseColor("#4097F3"));
+       mNormalDotPaint.setStyle(Paint.Style.FILL);
+
+       mScrollDotPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+       mScrollDotPaint.setColor(Color.parseColor("#4097F3"));
+       mScrollDotPaint.setStyle(Paint.Style.FILL);
+    }
+
+    /**
+     * 设置点的数量
+     * @param count
+     * @return
+     */
+    public PagerIndicatorView setCount(int count){
+        this.dotCounts = count;
+        return this;
+    }
+
+    /**
+     * 正常点的大小
+     * @param width
+     */
+    public PagerIndicatorView setNormalDotSize(int width, int height){
+        this.normalDotWidth = dip2px(getContext(), width);
+        this.normalDotHeight = dip2px(getContext(), height);
+        return this;
+    }
+
+    /**
+     * 正常点的颜色
+     * @param color
+     */
+    public PagerIndicatorView setNormalDotColor(int color){
+        mNormalDotPaint.setColor(color);
+        return this;
+    }
+
+    /**
+     * 滑动点的颜色
+     * @param color
+     */
+    public PagerIndicatorView setScrollDotColor(int color){
+        mScrollDotPaint.setColor(color);
+        return this;
+    }
+
+    /**
+     * 滑动点的大小
+     * @param width
+     */
+    public PagerIndicatorView setScrollDotWidth(int width, int height){
+        this.scrollDotWidth = dip2px(getContext(), width);
+        this.scrollDotHeight = dip2px(getContext(), height);
+        return this;
+    }
+
+    /**
+     * 点之间的距离
+     * @param margin
+     */
+    public PagerIndicatorView setMargin(int margin){
+        this.dotMargin = dip2px(getContext(), margin);
+        return this;
+    }
+
+    /**
+     * 显示控件
+     */
+    public void show(){
+        if (scrollDotWidth < normalDotWidth){
+            scrollDotWidth = normalDotWidth;
         }
-        initView();
+        viewWidth = (dotCounts - 1) * normalDotWidth + (dotCounts -1) * dotMargin + scrollDotWidth;
+        viewHeight = Math.max(normalDotHeight, scrollDotHeight);
+        requestLayout();//view 重走 onMeasure, onCanvas
     }
 
-    private void initView() {
-        /**添加圆点父布局*/
-        indicatorLayout = new LinearLayout(getContext());
-        addView(indicatorLayout);
-        /**添加选中的圆点*/
-        selected_dots = new ImageView(getContext());
-        selected_dots.setImageResource(select_icon_id);
-        addView(selected_dots);
-        /**计算两点之间的距离*/
-        post(new Runnable() {
-            @Override
-            public void run() {
-                if (dotNum > 1){
-                    mDistance = indicatorLayout.getChildAt(1).getLeft() - indicatorLayout.getChildAt(0).getLeft();
-                }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        if (dotCounts <= 0){
+            super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        }else {
+            setMeasuredDimension(viewWidth, viewHeight);
+        }
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        if (dotCounts <= 1){
+            return;
+        }
+        normalDot(canvas);
+        scrollDot(canvas);
+    }
+
+    /**
+     * 初始化正常的点
+     * @param canvas
+     */
+    private void normalDot(Canvas canvas) {
+        //画第正常点,初始化坐标
+        float radius = normalDotWidth / 2.0f;
+        float cx = getPaddingLeft() + radius;
+        float cy = getMeasuredHeight()/2.0f;
+
+        for (int i = 0; i <dotCounts; i++){
+            canvas.drawCircle(cx, cy, radius, mNormalDotPaint);
+            //如果
+            if (i == scrollPosition){
+                cx = cx + scrollDotWidth + dotMargin;
+            }else {
+                cx = cx + dotMargin + normalDotWidth;
             }
-        });
-        /**开始向点的父布局添加点*/
-        ImageView defaultDot = null;
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        layoutParams.setMargins(0, 0, icon_right_margin, 0);
-        for (int i = 0; i < dotNum; i++) {
-            defaultDot = new ImageView(getContext());
-            defaultDot.setImageResource(default_icon_id);
-            indicatorLayout.addView(defaultDot, layoutParams);
         }
+
     }
+
+    /**
+     * 显示可滑动的点
+     * @param canvas
+     */
+    private void scrollDot(Canvas canvas) {
+        //画滑动的点
+        float radius = normalDotWidth / 2.0f;
+        int left = getPaddingLeft() + scrollInstance;
+        RectF rectF = new RectF(left,
+                getPaddingTop(),
+                left + scrollDotWidth,
+                getPaddingTop() + getHeight());
+        canvas.drawRoundRect(rectF,
+                radius,
+                radius,
+                mScrollDotPaint);
+    }
+
+
 
     /**
      *  效果是： 选中滑块随着页面的滑动而滑动
@@ -89,10 +204,9 @@ public class PagerIndicatorView extends RelativeLayout{
      * @param positionOffset
      */
     public void onPageScrolled(int position, float positionOffset) {
-        float leftMargin = mDistance * (position + positionOffset);
-        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) selected_dots.getLayoutParams();
-        params.leftMargin = (int) leftMargin;
-        selected_dots.setLayoutParams(params);
+        this.scrollPosition = position;
+        scrollInstance = (int)((position + positionOffset) * (dotMargin + normalDotWidth));
+        postInvalidate();
     }
 
     /**
@@ -101,10 +215,27 @@ public class PagerIndicatorView extends RelativeLayout{
      * @param position
      */
     public void onPageSelected(int position) {
-        float leftMargin = mDistance * position;
-        LayoutParams params = (LayoutParams) selected_dots.getLayoutParams();
-        params.leftMargin = (int) leftMargin;
-        selected_dots.setLayoutParams(params);
+        this.scrollPosition = position;
+        scrollInstance = position * (dotMargin + normalDotWidth);
+        postInvalidate();
     }
 
+
+
+    /**
+     * 根据手机的分辨率从 dp 的单位 转成为 px(像素)
+     */
+    private int dip2px(Context context, int dpValue) {
+        float scale = context.getResources().getDisplayMetrics().density;
+        return (int) (dpValue * scale + 0.5f);
+    }
+
+    /**
+     * 根据手机的分辨率从 px(像素) 的单位 转成为 dp
+     */
+    private int px2dip(Context context, float pxValue) {
+        float scale = context.getResources().getDisplayMetrics().density;
+        return (int) (pxValue / scale + 0.5f);
+    }
 }
+
