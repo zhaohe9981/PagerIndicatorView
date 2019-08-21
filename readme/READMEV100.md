@@ -1,11 +1,11 @@
 # PagerIndicatorView
 
-1、[体验demo](https://github.com/zhaozohar/PagerIndicatorView/tree/master/apk)
+1、[体验demo](../apk)
 
 2、`截图`
 <br/>
-<img src="https://github.com/zhaozohar/PagerIndicatorView/blob/master/picture/v100/pic1.png" width=216 height=384 />
-<img src="https://github.com/zhaozohar/PagerIndicatorView/blob/master/picture/v100/pic2.png" width=216 height=384 />
+<img src="../picture/v100/pic1.png" width=216 height=384 />
+<img src="../picture/v100/pic2.png" width=216 height=384 />
 
 3、`使用`
  <br/>
