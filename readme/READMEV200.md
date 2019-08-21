@@ -6,6 +6,7 @@
 <br/>
 <img src="https://github.com/zhaozohar/PagerIndicatorView/blob/master/picture/v200/pager1.png" width=216 height=384 />
 <img src="https://github.com/zhaozohar/PagerIndicatorView/blob/master/picture/v200/pager2.png" width=216 height=384 />
+<img src="https://github.com/zhaozohar/PagerIndicatorView/blob/master/picture/v200/v200.gif" width=216 height=384 />
 
 3、`改变`
 
