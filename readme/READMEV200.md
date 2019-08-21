@@ -16,26 +16,28 @@
 
 4、`使用`
  <br/>
- * 添加 jitpack仓库
+* 添加 jitpack仓库
     allprojects {
 		repositories {
 			...
 			maven { url 'https://www.jitpack.io' }
 		}
 	}
-	* 在gradle中引用库
+* 在gradle中引用库
 	implementation 'com.github.zhaohe9981:PagerIndicatorView:v200'
 	
-    * 在布局文件中添加pagerindicator
-    <com.xiaoniu.pagerindicator.PagerIndicatorView
+* 在布局文件中添加pagerindicator
+
+    ```<com.xiaoniu.pagerindicator.PagerIndicatorView
             android:id="@+id/piv_indicator"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_alignParentBottom="true"
-            android:layout_marginBottom="64dp"/>
+            android:layout_marginBottom="64dp"/>    
             
-     * PagerIndicatorView初始化：         
+* PagerIndicatorView初始化：         
+
          pagerIndicatorView
                         .setCount(ids.size())
                         .setMargin(9)
@@ -46,9 +48,10 @@
                         .setScrollDotColor(pagerIndicatorView.getContext().getResources().getColor(R.color.colorAccent))
                         .show();
   
- * PagerIndicatorView的选中图片随着viewpager的滚动而移动：<br/>
+* PagerIndicatorView的选中图片随着viewpager的滚动而移动：<br/>
  
     viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+    
                @Override
                public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
                    pagerIndicatorView.onPageScrolled(position, positionOffset);
